@@ -1,9 +1,10 @@
 import copy
 from collections import defaultdict
 
-from generate_dict import ALL_WORDS
+from generate_dict import SOWPODS, TWL
 
-end_letter = 'd'
+ALL_WORDS = SOWPODS
+
 INITIAL_COUNT = {
     '*': 2,
     'a': 9,
@@ -12,7 +13,7 @@ INITIAL_COUNT = {
     'd': 4,
     'e': 12,
     'f': 2,
-    'g': 2, # CHOICE
+    'g': 3,
     'h': 2,
     'i': 9,
     'j': 1,
@@ -62,11 +63,6 @@ VALUES = {
     'q': 10,
     'z': 10,
 }
-
-
-
-def add_blanks():
-    raise Exception('do not use!')
 
 
 def add_blanks_4(words):
@@ -124,7 +120,7 @@ def is_score_possible(score, remaining):
         return r
 
 
-TWO_LETTERS_SET = {x for x in ALL_WORDS[2]}
+TWO_LETTERS_SET = {x for x in SOWPODS[2]} & {x for x in TWL[2]}
 TWO_LETTERS_SET_BY_POINTS = defaultdict(set)
 for duo in TWO_LETTERS_SET:
     TWO_LETTERS_SET_BY_POINTS[points(duo)].add(duo)
@@ -138,13 +134,6 @@ END_LETTER_OF_2_POINTS_DUO = set()
 for duo in TWO_LETTERS_SET_BY_POINTS[2]:
     START_LETTER_OF_2_POINTS_DUO.add(duo[0])
     END_LETTER_OF_2_POINTS_DUO.add(duo[1])
-
-SEVEN_LETTERS_SET = {x for x in ALL_WORDS[7]}
-
-VALID_FOUR = {x for x in ALL_WORDS[4]}
-
-scrabble_scores = {16, 24, 36, 28}
-remaining_scores = {66, 29, 22, 16, 40, 86, 74, 78, 18, 20, 6, 48}
 
 possible_scores = {
     4: 1,
@@ -162,6 +151,3 @@ possible_scores = {
     48: 1,
 }
 
-
-if __name__ == '__main__':
-    print(START_LETTER_OF_3_POINTS_DUO)

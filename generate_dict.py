@@ -1,13 +1,23 @@
-ALL_WORDS = {2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: []}
+SOWPODS = {2: set(), 3: set(), 4: set(), 5: set(), 6: set(), 7: set(), 8: set(), 9: set()}
+TWL = {2: set(), 3: set(), 4: set(), 5: set(), 6: set(), 7: set(), 8: set(), 9: set()}
 
-dictionnary = 'sowpods.txt'
-dictionnary2 = 'twl18.txt'
-with open(dictionnary2, 'r') as f:
+sowpods = 'sowpods.txt'
+twl = 'twl18.txt'
+
+
+with open(sowpods, 'r') as f:
     line = f.readline()
     while line:
         line = line[0:-1]
-        if len(line) > 1 and len(line) < 10:
-            ALL_WORDS[len(line)].append(line)
+        if 1 < len(line) < 10:
+            SOWPODS[len(line)].add(line)
         line = f.readline()
 
-SEVEN_SET = {x for x in ALL_WORDS[7]}
+
+with open(twl, 'r') as f:
+    line = f.readline()
+    while line:
+        line = line[0:-1]
+        if 1 < len(line) < 10:
+            TWL[len(line)].add(line)
+        line = f.readline()

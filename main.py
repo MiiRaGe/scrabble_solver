@@ -8,6 +8,7 @@ from eleventh_word import get_eleventh_words_by_last
 from fifteenth_words import get_fifteenth_words_by_first_last
 from fifth_words import get_fifth_words_by_first_and_fifth
 from fourteenth_word import get_fourteenth_words
+from generate_dict import TWL, SOWPODS
 from nineth_words import get_ninth_words_by_duo_letter
 from seventeenth_words import get_seventeenth_words_by_last
 from seventh_words import get_seventh_words_by_first_fourth
@@ -16,13 +17,13 @@ from sixth_word import get_sixth_words_by_first_fifth
 from tenth_words import get_tenth_words_by_third_letter
 from thirteenth_words import get_thirteenth_words
 from twelveth_words import get_twelveth_words
-from twentieth_words import get_twentieth_words, get_twentieth_words_by_first
-from first_words import first_words
+from twentieth_words import get_twentieth_words_by_first
+from first_words import get_first_words
 from fourth_words import get_fourth_words_by_fourth
 from second_words import get_second_words_by_sixth
 from third_words import get_third_words_by_fourth
 from utils import is_word_possible, points, INITIAL_COUNT, \
-    TWO_LETTERS_SET_BY_POINTS, TWO_LETTERS_SET, VALID_FOUR
+    TWO_LETTERS_SET_BY_POINTS, TWO_LETTERS_SET
 
 
 def summary(possibilities):
@@ -45,6 +46,7 @@ def sum_letters(possibilities):
     for (letter, counts) in letter_sum.items():
         print("'{}': {},".format(letter, max(counts)))
 
+
 def display_status(possibilities):
     print(len(possibilities))
     summary(possibilities)
@@ -62,29 +64,69 @@ def get_max_letters(possibilities):
         letter_sum[letter] = max(counts)
     return letter_sum
 
-scores = {
-    '8th': 22,
-    '9th': 16,
-    '10th': 40,
-    '15th': 16,
-    '16th': 20,
-    '17th': 18,
+
+MAX_SCORES = {
+    16: 2,
+    18: 1,
+    22: 1,
+    20: 1,
+    40: 1,
+}
+SCORES_ALTERNATIVE = {
+    '8th': [16, 22, 40, 18, 20],
+    '9th': [16, 22],
+    '10th': [16, 40],
+    '15th': [16, 18],
+    '16th': [18, 20],
+    '17th': [16, 22, 40, 18, 20],
 }
 
-if __name__ == '__main__':
+RANKS = ['8th', '9th', '10th', '15th', '16th', '17th']
+
+
+def generate_scores_combo():
+    combo_list = [
+        {
+            'scores': {},
+            'max_scores': copy.copy(MAX_SCORES),
+        }
+    ]
+    for rank in RANKS:
+        alternatives = SCORES_ALTERNATIVE[rank]
+        new_combo_list = []
+        for combo in combo_list:
+            max_scores = combo['max_scores']
+            for score in alternatives:
+                if max_scores[score] == 0:
+                    continue
+                if rank == '10th':
+                    if score == combo['scores']['9th']:
+                        continue
+                if rank == '16th':
+                    if score == combo['scores']['15th']:
+                        continue
+                new_combo = copy.deepcopy(combo)
+                new_combo['max_scores'][score] -= 1
+                new_combo['scores'][rank] = score
+                new_combo_list.append(new_combo)
+        combo_list = new_combo_list
+    return [x['scores'] for x in combo_list]
+
+
+def try_to_solve(scores, last_letter, dictionnary, variant):
+    letters = copy.copy(INITIAL_COUNT)
+    letters[last_letter] -= 1
     possibilities = []
-    print('Adding 1st')
     # First 120
-    for first_word in first_words:
+    for first_word in get_first_words(letters, dictionnary):
         possibilities.append({'words': [first_word],
                               'letters': is_word_possible(first_word, copy.copy(INITIAL_COUNT))})
 
-    print('Before/After {} {}'.format(0, len(possibilities)))
+    # print('Adding 1st: Before/After {} {}'.format(0, len(possibilities)))
 
-    print('Adding 2nd')
     # Second word 102
     letters = get_max_letters(possibilities)
-    second_words_by_sixth = get_second_words_by_sixth(letters)
+    second_words_by_sixth = get_second_words_by_sixth(letters, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         words = second_words_by_sixth[possibility['words'][0][2]]
@@ -94,13 +136,12 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [second_word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    # print('Adding 2nd: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
 
-    print('Adding 3rd')
     # Third word 89 - quixotic
     letters = get_max_letters(possibilities)
-    third_words_by_fourth = get_third_words_by_fourth(letters)
+    third_words_by_fourth = get_third_words_by_fourth(letters, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         words = third_words_by_fourth[possibility['words'][1][1]]
@@ -111,13 +152,12 @@ if __name__ == '__main__':
             new_possibilities.append(
                 {'words': possibility['words'] + [third_word],
                  'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    # print('Adding 3rd: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
 
-    print('Adding 4th')
     # Fourth word 66 - kumquat
     letters = get_max_letters(possibilities)
-    fourth_words_by_fourth = get_fourth_words_by_fourth(letters)
+    fourth_words_by_fourth = get_fourth_words_by_fourth(letters, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         words = fourth_words_by_fourth[possibility['words'][2][0]]
@@ -127,14 +167,13 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [fourth_word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    # print('Adding 4th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
 
     # display_status(possibilities)
-    print('Adding 5th')
     # Fifth word 66 - ?
     letters = get_max_letters(possibilities)
-    fifth_words_by_first_and_fifth = get_fifth_words_by_first_and_fifth(letters)
+    fifth_words_by_first_and_fifth = get_fifth_words_by_first_and_fifth(letters, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         words = fifth_words_by_first_and_fifth[possibility['words'][2][-1] + possibility['words'][0][-1]]
@@ -148,13 +187,12 @@ if __name__ == '__main__':
             new_possibilities.append(
                 {'words': possibility['words'] + [fifth_word], 'letters': letters})
 
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    # print('Adding 5th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
 
-    print('Adding 6th')
     # Sixth word - 74
     letter = get_max_letters(possibilities)
-    sixth_words_by_first_fifth = get_sixth_words_by_first_fifth(letters)
+    sixth_words_by_first_fifth = get_sixth_words_by_first_fifth(letters, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         words = sixth_words_by_first_fifth[possibility['words'][1][-1] + possibility['words'][4][6]]
@@ -167,14 +205,13 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [sixth_word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 6th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
 
     # Seventh word - 29
-    print('Adding 7th')
     score = 29
     letters = get_max_letters(possibilities)
-    seventh_words_by_first_fourth = get_seventh_words_by_first_fourth(letters, score)
+    seventh_words_by_first_fourth = get_seventh_words_by_first_fourth(letters, score, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         extra_letters = defaultdict(lambda: 0)
@@ -188,15 +225,13 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [seventh_word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 7th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
 
-
     # 8th -
-    print('Adding 8th')
     letters = get_max_letters(possibilities)
     score = scores['8th']
-    eighth_words_by_third_last = get_eighth_words_by_third_last(letters, score)
+    eighth_words_by_third_last = get_eighth_words_by_third_last(letters, score, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         possible_words = possibility['words']
@@ -210,13 +245,14 @@ if __name__ == '__main__':
             if not letters:
                 continue
             new_possibilities.append({'words': possibility['words'] + [word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 8th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
+    if not possibilities:
+        return
 
     # 14th word 18 points
-    print('Adding 14th')
     letters = get_max_letters(possibilities)
-    fourteenth_words = get_fourteenth_words(letters)
+    fourteenth_words = get_fourteenth_words(letters, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         for word in fourteenth_words:
@@ -231,14 +267,14 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 14th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
-
+    if not possibilities:
+        return
     # 9th
-    print('Adding 9th')
     score = scores['9th']
     letters = get_max_letters(possibilities)
-    ninth_words_by_duo_letter = get_ninth_words_by_duo_letter(letters, score)
+    ninth_words_by_duo_letter = get_ninth_words_by_duo_letter(letters, score, dictionnary, variant)
     new_possibilities = []
     for possibility in possibilities:
         duo = possibility['words'][5][-1] + possibility['words'][-1][2]
@@ -252,31 +288,44 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 9th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
+    if not possibilities:
+        return
 
     # 10th word 6 letters
-    print('Adding 10th')
     letters = get_max_letters(possibilities)
     score = scores['10th']
-    tenth_words_by_third_letter = get_tenth_words_by_third_letter(letters, score)
+    tenth_words_by_third_letter = get_tenth_words_by_third_letter(letters, scores, dictionnary, variant)
     new_possibilities = []
     for possibility in possibilities:
-        words = tenth_words_by_third_letter[possibility['words'][-1][-1]]
-        for word in words:
+        if variant['1'] == 1:
+            extra_letters = {}
+            for last, words in tenth_words_by_third_letter.items():
+                if possibility['words'][-1] + last not in dictionnary[5]:
+                    continue
+                for word in words:
+                    letters = is_word_possible(word, possibility['letters'], extra_letters)
+                    if not letters:
+                        continue
+                    new_possibilities.append(
+                        {'words': possibility['words'] + [word], 'letters': letters})
+        else:
             extra_letters = {possibility['words'][8][-1]: 1}
-            letters = is_word_possible(word, possibility['letters'], extra_letters)
-            if not letters:
-                continue
-            new_possibilities.append(
-                {'words': possibility['words'] + [word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+            words = tenth_words_by_third_letter[possibility['words'][-1][-1]]
+            for word in words:
+                letters = is_word_possible(word, possibility['letters'], extra_letters)
+                if not letters:
+                    continue
+                new_possibilities.append(
+                    {'words': possibility['words'] + [word], 'letters': letters})
+    print('Adding 10th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
-
+    if not possibilities:
+        return
     # 11th word 86 points
-    print('Adding 11th')
     letters = get_max_letters(possibilities)
-    eleventh_words_by_last = get_eleventh_words_by_last(letters)
+    eleventh_words_by_last = get_eleventh_words_by_last(letters, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         words = eleventh_words_by_last[possibility['words'][-1][-1]]
@@ -287,13 +336,13 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 11th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
-
+    if not possibilities:
+        return
     # 12th word 7 letters
-    print('Adding 12th')
     letters = get_max_letters(possibilities)
-    twelveth_words = get_twelveth_words(letters)
+    twelveth_words = get_twelveth_words(letters, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         for word in twelveth_words:
@@ -307,14 +356,14 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 12th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
-
+    if not possibilities:
+        return
     # 15th word 18 points
-    print('Adding 15th')
     score = scores['15th']
     letters = get_max_letters(possibilities)
-    fifteenth_words_by_first_last = get_fifteenth_words_by_first_last(letters, score)
+    fifteenth_words_by_first_last = get_fifteenth_words_by_first_last(letters, score, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         words = fifteenth_words_by_first_last[possibility['words'][4][1] + possibility['words'][-1][3]]
@@ -327,14 +376,14 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 15th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
-
+    if not possibilities:
+        return
     # 16th word
-    print('Adding 16th')
     score = scores['16th']
     letters = get_max_letters(possibilities)
-    sixteenth_words_by_last = get_sixteenth_words_by_last(letters, score)
+    sixteenth_words_by_last = get_sixteenth_words_by_last(letters, score, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         words = sixteenth_words_by_last[possibility['words'][-1][4]]
@@ -345,14 +394,14 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 16th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
-
+    if not possibilities:
+        return
     # 17th word
     score = scores['17th']
-    print('Adding 17th')
     letters = get_max_letters(possibilities)
-    seventeenth_words_by_last = get_seventeenth_words_by_last(letters, score)
+    seventeenth_words_by_last = get_seventeenth_words_by_last(letters, score, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         words = seventeenth_words_by_last[possibility['words'][5][-1]]
@@ -363,13 +412,14 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 17th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
-
+    if not possibilities:
+        return
+    import pdb;pdb.set_trace()
     # 18th Word - 6 points
-    print('Adding 18th')
     letters = get_max_letters(possibilities)
-    eighteenth_words_by_first = get_eighteenth_words_by_first(letters)
+    eighteenth_words_by_first = get_eighteenth_words_by_first(letters, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         eighteenth_words = eighteenth_words_by_first[possibility['words'][-1][0]]
@@ -381,13 +431,13 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [eighteenth_word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 18th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
-
-    print('Adding last')
+    if not possibilities:
+        return
     # LAST WORD - ?
     letters = get_max_letters(possibilities)
-    twentieth_words_by_first = get_twentieth_words_by_first(letters)
+    twentieth_words_by_first = get_twentieth_words_by_first(letters, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         eigthteenth_word = possibility['words'][-1]
@@ -399,13 +449,13 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [twentieth_word], 'letters': letters})
+    print('Adding last: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
-
+    if not possibilities:
+        return
     # 13th word 18 points
-    print('Adding 13th')
     letters = get_max_letters(possibilities)
-    thirteenth_words = get_thirteenth_words(letters)
+    thirteenth_words = get_thirteenth_words(letters, dictionnary)
     new_possibilities = []
     for possibility in possibilities:
         twelveth_word = possibility['words'][12]
@@ -426,7 +476,41 @@ if __name__ == '__main__':
                 continue
             new_possibilities.append(
                 {'words': possibility['words'] + [word], 'letters': letters})
-    print('Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    print('Adding 13th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
 
-    display_status(possibilities)
+    if possibilities:
+        return possibilities
+
+
+def variants():
+    variants = []
+    for x in [0, 1]:
+        for y in [0, 1]:
+            for z in [0, 1]:
+                variants.append({'1': z, '2': y, '3': x})
+    return [{'1': 0}]
+
+
+if __name__ == '__main__':
+    scores_combo = generate_scores_combo()
+    last_letters = ['d', 'g']
+    dictionnaries = [SOWPODS, TWL]
+    result = None
+    for variant in variants():
+        for i, dictionnary in enumerate(dictionnaries):
+            for last_letter in last_letters:
+                for scores in scores_combo:
+                    print('Trying {}, {}, {}, {}'.format(variant, ['SOWPODS', 'TWL'][i], last_letter, scores))
+                    result = try_to_solve(scores, last_letter, dictionnary, variant)
+                    if result:
+                        print('found solution for {},{},{},{}'.format(variant, i, last_letter, scores))
+                        display_status(result)
+                        break
+                if result:
+                    break
+            if result:
+                break
+        if result:
+            break
+    print('No solution :(')
