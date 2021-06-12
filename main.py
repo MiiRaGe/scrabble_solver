@@ -1,5 +1,8 @@
 # This is a sample Python script.
 import copy
+import sys
+import json
+import hashlib
 from collections import defaultdict
 
 from eigth_words import get_eighth_words_by_third_last
@@ -65,77 +68,6 @@ def get_max_letters(possibilities):
     return letter_sum
 
 
-MAX_SCORES = {
-    16: 2,
-    18: 1,
-    22: 1,
-    20: 1,
-    40: 1,
-}
-SCORES_ALTERNATIVE = {
-    '8th': [16, 22, 40, 18, 20],
-    '9th': [16, 22],
-    '10th': [16, 40],
-    '15th': [16, 18],
-    '16th': [18, 20],
-    '17th': [16, 22, 40, 18, 20],
-}
-
-SCORES_ALTERNATIVE_VARIANT = {
-    '8th': [16, 18, 20],
-    '9th': [16, 22],
-    '10th': [16, 40],
-    '15th': [16, 22, 40],
-    '16th': [16, 18, 20],
-    '17th': [16, 18, 20],
-}
-
-
-RANKS = ['8th', '9th', '10th', '15th', '16th', '17th']
-
-
-def generate_scores_combo(variant):
-    combo_list = [
-        {
-            'scores': {},
-            'max_scores': copy.copy(MAX_SCORES),
-        }
-    ]
-    for rank in RANKS:
-        alternatives = SCORES_ALTERNATIVE[rank]
-        if variant['2'] == 1:
-            alternatives = SCORES_ALTERNATIVE_VARIANT[rank]
-        new_combo_list = []
-        for combo in combo_list:
-            max_scores = combo['max_scores']
-            for score in alternatives:
-                if max_scores[score] == 0:
-                    continue
-                if rank == '10th':
-                    if score == combo['scores']['9th']:
-                        continue
-                if variant['2'] == 1:
-                    if rank == '15th':
-                        if score == combo['scores']['9th'] or score == combo['scores']['10th']:
-                            continue
-                    elif rank == '16th':
-                        if score == combo['scores']['8th']:
-                            continue
-                    elif rank == '17th':
-                        if score == combo['scores']['8th'] or score == combo['scores']['16th']:
-                            continue
-                else:
-                    if rank == '16th':
-                        if score == combo['scores']['15th']:
-                            continue
-                new_combo = copy.deepcopy(combo)
-                new_combo['max_scores'][score] -= 1
-                new_combo['scores'][rank] = score
-                new_combo_list.append(new_combo)
-        combo_list = new_combo_list
-    return [x['scores'] for x in combo_list]
-
-
 def try_to_solve(scores, last_letter, dictionnary, variant):
     letters = copy.copy(INITIAL_COUNT)
     letters[last_letter] -= 1
@@ -146,7 +78,7 @@ def try_to_solve(scores, last_letter, dictionnary, variant):
                               'letters': is_word_possible(first_word, copy.copy(INITIAL_COUNT))})
 
     # print('Adding 1st: Before/After {} {}'.format(0, len(possibilities)))
-
+    # return possibilities
     # Second word 102
     letters = get_max_letters(possibilities)
     second_words_by_sixth = get_second_words_by_sixth(letters, dictionnary)
@@ -505,36 +437,21 @@ def try_to_solve(scores, last_letter, dictionnary, variant):
         return possibilities
 
 
-def variants():
-    variants = []
-    for x in [0, 1]:
-        for y in [0, 1]:
-            variants.append({'1': x, '2': y})
-            for z in [0, 1]:
-                pass
-    return [{'1': 0, '2': 1}]
-    return variants
-
-
 if __name__ == '__main__':
-    last_letters = ['d', 'g']
-    dictionnaries = [SOWPODS, TWL]
-    result = None
-    for variant in variants():
-        scores_combo = generate_scores_combo(variant)
-        for i, dictionnary in enumerate(dictionnaries):
-            for last_letter in last_letters:
-                for scores in scores_combo:
-                    print('Trying {}, {}, {}, {}'.format(variant, ['SOWPODS', 'TWL'][i], last_letter, scores))
-                    result = try_to_solve(scores, last_letter, dictionnary, variant)
-                    if result:
-                        print('found solution for {},{},{},{}'.format(variant, i, last_letter, scores))
-                        display_status(result)
-                        break
-                if result:
-                    break
-            if result:
-                break
-        if result:
-            break
-    print('No solution :(')
+    config = json.loads(sys.argv[1])
+    hash = hashlib.md5(sys.argv[1].encode('utf8')).hexdigest()
+
+    dictionnary = None
+    if config['dictionnary'] == 'sowpods':
+        dictionnary = SOWPODS
+    elif config['dictionnary'] == 'twl':
+        dictionnary = TWL
+    if not dictionnary:
+        print('Wrong dictionnary param')
+
+    result = try_to_solve(config['scores'],config['last_letter'],dictionnary, config['variant'])
+    if result:
+        with open('solutions/solution_{}.json'.format(hash), 'w') as solution:
+            json.dump(config, solution)
+            solution.write('\n')
+            json.dump(result, solution)
