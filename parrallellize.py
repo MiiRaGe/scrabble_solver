@@ -93,7 +93,7 @@ def run_process(args):
      'scores': scores}
     param = json.dumps(config)
     hash = hashlib.md5(param.encode('utf8')).hexdigest()
-    os.system('python3 main.py \'{}\' > logs/{}.log'.format(param, hash))
+    os.system('python3 main.py \'{}\' > logs/{}.log 2>&1'.format(param, hash))
 
 
 if __name__ == '__main__':

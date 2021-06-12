@@ -284,8 +284,8 @@ def try_to_solve(scores, last_letter, dictionnary, variant):
     new_possibilities = []
     for possibility in possibilities:
         words = eleventh_words_by_last[possibility['words'][-1][-1]]
+        extra_letters = {possibility['words'][-1][-1]: 1}
         for word in words:
-            extra_letters = {possibility['words'][-1][-1]: 1}
             letters = is_word_possible(word, possibility['letters'], extra_letters)
             if not letters:
                 continue
