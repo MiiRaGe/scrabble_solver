@@ -81,10 +81,20 @@ SCORES_ALTERNATIVE = {
     '17th': [16, 22, 40, 18, 20],
 }
 
+SCORES_ALTERNATIVE_VARIANT = {
+    '8th': [16, 18, 20],
+    '9th': [16, 22],
+    '10th': [16, 40],
+    '15th': [16, 22, 40],
+    '16th': [16, 18, 20],
+    '17th': [16, 18, 20],
+}
+
+
 RANKS = ['8th', '9th', '10th', '15th', '16th', '17th']
 
 
-def generate_scores_combo():
+def generate_scores_combo(variant):
     combo_list = [
         {
             'scores': {},
@@ -93,6 +103,8 @@ def generate_scores_combo():
     ]
     for rank in RANKS:
         alternatives = SCORES_ALTERNATIVE[rank]
+        if variant['2'] == 1:
+            alternatives = SCORES_ALTERNATIVE_VARIANT[rank]
         new_combo_list = []
         for combo in combo_list:
             max_scores = combo['max_scores']
@@ -102,9 +114,20 @@ def generate_scores_combo():
                 if rank == '10th':
                     if score == combo['scores']['9th']:
                         continue
-                if rank == '16th':
-                    if score == combo['scores']['15th']:
-                        continue
+                if variant['2'] == 1:
+                    if rank == '15th':
+                        if score == combo['scores']['9th'] or score == combo['scores']['10th']:
+                            continue
+                    elif rank == '16th':
+                        if score == combo['scores']['8th']:
+                            continue
+                    elif rank == '17th':
+                        if score == combo['scores']['8th'] or score == combo['scores']['16th']:
+                            continue
+                else:
+                    if rank == '16th':
+                        if score == combo['scores']['15th']:
+                            continue
                 new_combo = copy.deepcopy(combo)
                 new_combo['max_scores'][score] -= 1
                 new_combo['scores'][rank] = score
@@ -342,7 +365,7 @@ def try_to_solve(scores, last_letter, dictionnary, variant):
         return
     # 12th word 7 letters
     letters = get_max_letters(possibilities)
-    twelveth_words = get_twelveth_words(letters, dictionnary)
+    twelveth_words = get_twelveth_words(letters, dictionnary, scores, variant)
     new_possibilities = []
     for possibility in possibilities:
         for word in twelveth_words:
@@ -363,7 +386,7 @@ def try_to_solve(scores, last_letter, dictionnary, variant):
     # 15th word 18 points
     score = scores['15th']
     letters = get_max_letters(possibilities)
-    fifteenth_words_by_first_last = get_fifteenth_words_by_first_last(letters, score, dictionnary)
+    fifteenth_words_by_first_last = get_fifteenth_words_by_first_last(letters, score, dictionnary, variant)
     new_possibilities = []
     for possibility in possibilities:
         words = fifteenth_words_by_first_last[possibility['words'][4][1] + possibility['words'][-1][3]]
@@ -416,7 +439,6 @@ def try_to_solve(scores, last_letter, dictionnary, variant):
     possibilities = new_possibilities
     if not possibilities:
         return
-    import pdb;pdb.set_trace()
     # 18th Word - 6 points
     letters = get_max_letters(possibilities)
     eighteenth_words_by_first = get_eighteenth_words_by_first(letters, dictionnary)
@@ -487,17 +509,19 @@ def variants():
     variants = []
     for x in [0, 1]:
         for y in [0, 1]:
+            variants.append({'1': x, '2': y})
             for z in [0, 1]:
-                variants.append({'1': z, '2': y, '3': x})
-    return [{'1': 0}]
+                pass
+    return [{'1': 0, '2': 1}]
+    return variants
 
 
 if __name__ == '__main__':
-    scores_combo = generate_scores_combo()
     last_letters = ['d', 'g']
     dictionnaries = [SOWPODS, TWL]
     result = None
     for variant in variants():
+        scores_combo = generate_scores_combo(variant)
         for i, dictionnary in enumerate(dictionnaries):
             for last_letter in last_letters:
                 for scores in scores_combo:
