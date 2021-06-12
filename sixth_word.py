@@ -1,13 +1,15 @@
 import copy
 from collections import defaultdict
 
-from utils import points, is_word_possible, VALUES, START_LETTER_OF_3_POINTS_DUO
+from generate_dict import SOWPODS
+from utils import points, is_word_possible, VALUES, START_LETTER_OF_3_POINTS_DUO, INITIAL_COUNT
 
 
 def get_extra_letters(x):
     extra_letters = defaultdict(lambda: 0)
     extra_letters[x[0]] += 1
     extra_letters[x[4]] += 1
+    return extra_letters
 
 
 def get_sixth_words_by_first_fifth(letters, words):
@@ -22,3 +24,12 @@ def get_sixth_words_by_first_fifth(letters, words):
         sixth_words_by_first_fifth[x[0]+x[4]].append(x)
     return sixth_words_by_first_fifth
 
+
+if __name__ == '__main__':
+    get_sixth_words_by_first_fifth(INITIAL_COUNT, SOWPODS)
+    get_sixth_words_by_first_fifth(INITIAL_COUNT, SOWPODS)
+    get_sixth_words_by_first_fifth(INITIAL_COUNT, SOWPODS)
+    get_sixth_words_by_first_fifth(INITIAL_COUNT, SOWPODS)
+    get_sixth_words_by_first_fifth(INITIAL_COUNT, SOWPODS)
+    get_sixth_words_by_first_fifth(INITIAL_COUNT, SOWPODS)
+    get_sixth_words_by_first_fifth(INITIAL_COUNT, SOWPODS)

@@ -9,7 +9,8 @@ def variants():
     variants = []
     for x in [0, 1]:
         for y in [0, 1]:
-            variants.append({'1': x, '2': y})
+            for z in [0, 1]:
+                variants.append({'1': x, '2': y, '3': z})
     return variants
 
 

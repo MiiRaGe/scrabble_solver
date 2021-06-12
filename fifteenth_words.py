@@ -10,25 +10,16 @@ def get_extra_letters(x):
     return extra_letters
 
 
-def get_fifteenth_words_by_first_last_variant(letters, score, words):
-    fifteenth_words = [x for x in words[7] if points(x[0:6], None, 2) == score and is_word_possible(x, letters, get_extra_letters(x))]
-    fifteenth_words = [x for x in fifteenth_words if x[0:6] in words[6]]
-    fifteenth_words_by_first_last = defaultdict(list)
-    for x in fifteenth_words:
-        fifteenth_words_by_first_last[x[0] + x[-1]].append(x)
-    return fifteenth_words_by_first_last
-
-
-def get_fifteenth_words_by_first_last_original(letters, score, words):
-    fifteenth_words = [x for x in words[7] if points(x, None, 2) == score and is_word_possible(x, letters, get_extra_letters(x))]
-    fifteenth_words_by_first_last = defaultdict(list)
-    for x in fifteenth_words:
-        fifteenth_words_by_first_last[x[0] + x[-1]].append(x)
-    return fifteenth_words_by_first_last
-
-
-def get_fifteenth_words_by_first_last(letters, score, words, variant):
+def get_fifteenth_words_by_first_or_first_last(letters, score, words, variant):
     if variant['2'] == 1:
-        return get_fifteenth_words_by_first_last_variant(letters, score, words)
+        fifteenth_words = [x for x in words[7] if points(x[0:6], None, 2) == score]
     else:
-        return get_fifteenth_words_by_first_last_original(letters, score, words)
+        fifteenth_words = [x for x in words[7] if points(x, None, 2) == score]
+    fifteenth_words = [x for x in fifteenth_words if is_word_possible(x, letters, get_extra_letters(x))]
+    fifteenth_words_by_first_last = defaultdict(list)
+    fifteenth_words_by_first = defaultdict(list)
+    for x in fifteenth_words:
+        fifteenth_words_by_first_last[x[0] + x[-1]].append(x)
+        fifteenth_words_by_first[x[0]].append(x)
+
+    return fifteenth_words_by_first, fifteenth_words_by_first_last
