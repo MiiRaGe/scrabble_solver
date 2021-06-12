@@ -318,24 +318,6 @@ def try_to_solve(scores, last_letter, dictionnary, variant):
     if not possibilities:
         return
 
-    # 10th word 6 letters
-    letters = get_max_letters(possibilities)
-    tenth_words_by_third_letter = get_tenth_words_by_third_letter(letters, scores, dictionnary, variant)
-    new_possibilities = []
-    for possibility in possibilities:
-        extra_letters = {possibility['words'][8][-1]: 1}
-        words = tenth_words_by_third_letter[possibility['words'][8][-1]]
-        for word in words:
-            letters = is_word_possible(word, possibility['letters'], extra_letters)
-            if not letters:
-                continue
-            new_possibilities.append(
-                {'words': add_word_to_list(word, possibility['words'], 9), 'letters': letters})
-    print('Adding 10th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
-    possibilities = new_possibilities
-    if not possibilities:
-        return
-
     # 20th WORD - ?
     letters = get_max_letters(possibilities)
     twentieth_words_by_first, twelveth_words = get_twentieth_words(letters, dictionnary, variant)
@@ -352,48 +334,6 @@ def try_to_solve(scores, last_letter, dictionnary, variant):
             new_possibilities.append(
                 {'words': add_word_to_list(twentieth_word, possibility['words'], 19), 'letters': letters})
     print('Adding 20th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
-    possibilities = new_possibilities
-    if not possibilities:
-        return
-
-    # 11th word 86 points
-    letters = get_max_letters(possibilities)
-    eleventh_words_by_last = get_eleventh_words_by_last(letters, dictionnary)
-    new_possibilities = []
-    for possibility in possibilities:
-        words = eleventh_words_by_last[possibility['words'][9][-1]]
-        extra_letters = {possibility['words'][9][-1]: 1}
-        for word in words:
-            if possibility['words'][11]:
-                if possibility['words'][11][-2] + word[0] not in TWO_LETTERS_SET:
-                    continue
-                if possibility['words'][11][-1] + word[1] not in TWO_LETTERS_SET:
-                    continue
-            letters = is_word_possible(word, possibility['letters'], extra_letters)
-            if not letters:
-                continue
-            new_possibilities.append(
-                {'words': add_word_to_list(word, possibility['words'], 10), 'letters': letters})
-    print('Adding 11th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
-    possibilities = new_possibilities
-    if not possibilities:
-        return
-
-    # 16th word
-    score = scores['16th']
-    letters = get_max_letters(possibilities)
-    sixteenth_words_by_last = get_sixteenth_words_by_last(letters, score, dictionnary)
-    new_possibilities = []
-    for possibility in possibilities:
-        words = sixteenth_words_by_last[possibility['words'][14][4]]
-        extra_letters = {possibility['words'][14][4]: 1}
-        for word in words:
-            letters = is_word_possible(word, possibility['letters'], extra_letters)
-            if not letters:
-                continue
-            new_possibilities.append(
-                {'words': add_word_to_list(word, possibility['words'], 15), 'letters': letters})
-    print('Adding 16th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
     possibilities = new_possibilities
     if not possibilities:
         return
@@ -469,6 +409,67 @@ def try_to_solve(scores, last_letter, dictionnary, variant):
         return possibilities
 
 
+    # 10th word 6 letters
+    letters = get_max_letters(possibilities)
+    tenth_words_by_third_letter = get_tenth_words_by_third_letter(letters, scores, dictionnary, variant)
+    new_possibilities = []
+    for possibility in possibilities:
+        extra_letters = {possibility['words'][8][-1]: 1}
+        words = tenth_words_by_third_letter[possibility['words'][8][-1]]
+        for word in words:
+            letters = is_word_possible(word, possibility['letters'], extra_letters)
+            if not letters:
+                continue
+            new_possibilities.append(
+                {'words': add_word_to_list(word, possibility['words'], 9), 'letters': letters})
+    print('Adding 10th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    possibilities = new_possibilities
+    if not possibilities:
+        return
+
+    # 11th word 86 points
+    letters = get_max_letters(possibilities)
+    eleventh_words_by_last = get_eleventh_words_by_last(letters, dictionnary)
+    new_possibilities = []
+    for possibility in possibilities:
+        words = eleventh_words_by_last[possibility['words'][9][-1]]
+        extra_letters = {possibility['words'][9][-1]: 1}
+        for word in words:
+            if possibility['words'][11]:
+                if possibility['words'][11][-2] + word[0] not in TWO_LETTERS_SET:
+                    continue
+                if possibility['words'][11][-1] + word[1] not in TWO_LETTERS_SET:
+                    continue
+            letters = is_word_possible(word, possibility['letters'], extra_letters)
+            if not letters:
+                continue
+            new_possibilities.append(
+                {'words': add_word_to_list(word, possibility['words'], 10), 'letters': letters})
+    print('Adding 11th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    possibilities = new_possibilities
+    if not possibilities:
+        return
+
+    # 16th word
+    score = scores['16th']
+    letters = get_max_letters(possibilities)
+    sixteenth_words_by_last = get_sixteenth_words_by_last(letters, score, dictionnary)
+    new_possibilities = []
+    for possibility in possibilities:
+        words = sixteenth_words_by_last[possibility['words'][14][4]]
+        extra_letters = {possibility['words'][14][4]: 1}
+        for word in words:
+            letters = is_word_possible(word, possibility['letters'], extra_letters)
+            if not letters:
+                continue
+            new_possibilities.append(
+                {'words': add_word_to_list(word, possibility['words'], 15), 'letters': letters})
+    print('Adding 16th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    possibilities = new_possibilities
+    if not possibilities:
+        return
+
+
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         config = json.loads(sys.argv[1])
@@ -476,7 +477,7 @@ if __name__ == '__main__':
     else:
         config = {
             'dictionnary': 'twl',
-            'variant': {'1': 1, '2': 1, '3': 1},
+            'variant': {'1': 0, '2': 1, '3': 1},
             'last_letter': 'g',
             'scores': {
                 '8th': 16,
