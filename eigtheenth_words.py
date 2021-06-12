@@ -5,7 +5,7 @@ from generate_dict import TWL
 from utils import points, is_word_possible, VALUES, INITIAL_COUNT
 
 
-def get_eighteenth_words_by_first(letters, words, variant):
+def get_eighteenth_words(letters, words, variant):
     eighteenth_words = [x for x in words[4] if is_word_possible(x, letters, {x[0]: 1})]
     eighteenth_words = [x for x in eighteenth_words if VALUES[x[1]] == 1]
     if variant['3'] == 1:
@@ -15,9 +15,13 @@ def get_eighteenth_words_by_first(letters, words, variant):
         eighteenth_words = [x for x in eighteenth_words if points(x, [1, 1, 1, 2], 1) == 6]
 
     eighteenth_words_by_first = defaultdict(list)
+    eighteenth_words_by_first_last = defaultdict(list)
+    eighteenth_words_by_last = defaultdict(list)
     for x in eighteenth_words:
         eighteenth_words_by_first[x[0]].append(x)
-    return eighteenth_words_by_first
+        eighteenth_words_by_first_last[x[0] + x[-1]].append(x)
+        eighteenth_words_by_last[x[-1]].append(x)
+    return eighteenth_words_by_first, eighteenth_words_by_last, eighteenth_words_by_first_last, eighteenth_words
 
 
 if __name__ == '__main__':

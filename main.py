@@ -6,7 +6,7 @@ import hashlib
 from collections import defaultdict
 
 from eigth_words import get_eighth_words_by_third_last
-from eigtheenth_words import get_eighteenth_words_by_first
+from eigtheenth_words import get_eighteenth_words
 from eleventh_word import get_eleventh_words_by_last
 from fifteenth_words import get_fifteenth_words_by_first_or_first_last
 from fifth_words import get_fifth_words_by_first_and_fifth
@@ -359,17 +359,19 @@ def try_to_solve(scores, last_letter, dictionnary, variant):
 
     # 18th Word - 6 points
     letters = get_max_letters(possibilities)
-    eighteenth_words_by_first = get_eighteenth_words_by_first(letters, dictionnary, variant)
+    i18th_by_first, i18th_by_last, i18th_by_first_last, i18th = get_eighteenth_words(letters, dictionnary, variant)
     new_possibilities = []
     for possibility in possibilities:
-        eighteenth_words = eighteenth_words_by_first[possibility['words'][16][0]]
-        extra_letters = defaultdict(lambda: 0)
-        extra_letters[possibility['words'][16][0]] += 1
-        for eighteenth_word in eighteenth_words:
-            if possibility['words'][19]:
-                if eighteenth_word[-1] != possibility['words'][19][0]:
-                    continue
-            letters = is_word_possible(eighteenth_word, possibility['letters'], extra_letters)
+        if possibility['words'][16] and possibility['words'][19]:
+            words = i18th_by_first_last[possibility['words'][16][0]+possibility['words'][19][0]]
+        elif possibility['words'][16]:
+            words = i18th_by_first_last[possibility['words'][16][0]]
+        elif possibility['words'][19]:
+            words = i18th_by_first_last[possibility['words'][19][0]]
+        else:
+            words = i18th
+        for eighteenth_word in words:
+            letters = is_word_possible(eighteenth_word, possibility['letters'], {eighteenth_word[0]:1})
             if not letters:
                 continue
             new_possibilities.append(
