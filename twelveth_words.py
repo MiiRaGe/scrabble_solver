@@ -2,7 +2,7 @@ import copy
 from collections import defaultdict
 
 from utils import points, is_word_possible, VALUES, add_blanks_7, \
-    START_LETTER_OF_2_POINTS_DUO
+    START_LETTER_OF_2_POINTS_DUO, TWO_LETTERS_SET, get_max_letters, add_word_to_list
 
 
 def get_compute_score_by_variant(variant, scores):
@@ -33,5 +33,39 @@ def get_twelveth_words(letters, words, scores, variant):
     twelveth_words = [x for x in twelveth_words if is_word_possible(x, letters)]
     twelveth_words_by_fourth = defaultdict(list)
     for x in twelveth_words:
+        twelveth_words_by_fourth['-'].append(x)
         twelveth_words_by_fourth[x[3]].append(x)
-    return twelveth_words, twelveth_words_by_fourth
+    return twelveth_words_by_fourth
+
+
+def guess_12th_word(possibilities, scores, dictionary, variant):
+    letters = get_max_letters(possibilities)
+    twelveth_words_by_fourth = get_twelveth_words(letters, dictionary, scores, variant)
+    new_possibilities = []
+    for possibility in possibilities:
+        key = '-'
+        if possibility['words'][14]:
+            key = possibility['words'][14][-1]
+        words = twelveth_words_by_fourth[key]
+        for word in words:
+            if possibility['words'][10]:
+                if word[-2] + possibility['words'][10][0] not in TWO_LETTERS_SET:
+                    continue
+                if word[-1] + possibility['words'][10][1] not in TWO_LETTERS_SET:
+                    continue
+            if possibility['words'][12]:
+                thirteenth = possibility['words'][12]
+                if word[0] + thirteenth[1] not in TWO_LETTERS_SET:
+                    continue
+                if points(word[1] + thirteenth[2]) != 1:
+                    continue
+                if points(word[2] + thirteenth[3], None, 2) != 2:
+                    continue
+            extra_letters = {}
+            letters = is_word_possible(word, possibility['letters'], extra_letters)
+            if not letters:
+                continue
+            new_possibilities.append(
+                {'words': add_word_to_list(word, possibility['words'], 11), 'letters': letters})
+    print('Adding 12th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    return new_possibilities

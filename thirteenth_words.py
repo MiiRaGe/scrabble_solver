@@ -1,4 +1,5 @@
-from utils import points, is_word_possible, VALUES, add_blanks_4, END_LETTER_OF_2_POINTS_DUO
+from utils import points, is_word_possible, VALUES, add_blanks_4, END_LETTER_OF_2_POINTS_DUO, add_word_to_list, \
+    get_max_letters, TWO_LETTERS_SET
 
 
 def get_thirteenth_words(letters, words):
@@ -15,3 +16,28 @@ def get_thirteenth_words(letters, words):
     thirteenth_words = [x for x in thirteenth_words if VALUES[x[1]] == 1]
     thirteenth_words = [x for x in thirteenth_words if VALUES[x[2]] <= 1 and VALUES[x[3]] <= 1]
     return thirteenth_words
+
+
+def guess_13th_word(possibilities, scores, dictionary, variant):
+    letters = get_max_letters(possibilities)
+    thirteenth_words = get_thirteenth_words(letters, dictionary)
+    new_possibilities = []
+    for possibility in possibilities:
+        extra_letters = {}
+        for word in thirteenth_words:
+            if possibility['words'][11]:
+                twelveth_word = possibility['words'][11]
+                if twelveth_word[0] + word[1] not in TWO_LETTERS_SET:
+                    continue
+                if points(twelveth_word[1] + word[2]) != 1:
+                    continue
+                if points(twelveth_word[2] + word[3], None, 2) != 2:
+                    continue
+            letters = is_word_possible(word, possibility['letters'], extra_letters)
+            if not letters:
+                continue
+            new_possibilities.append(
+                {'words': add_word_to_list(word, possibility['words'], 12), 'letters': letters})
+    print('Adding 13th: Before/After {} {}'.format(len(possibilities), len(new_possibilities)))
+    return new_possibilities
+

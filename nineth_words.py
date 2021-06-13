@@ -18,6 +18,7 @@ def get_ninth_words_by_duo_letter(letters, score, words, variant):
         ninth_words = [x for x in ninth_words if points(x, multiplier, 2) == score]
     else:
         multiplier = [1, 1, 1, 1]
+        ninth_words = [x for x in ninth_words if x[0:4] in words[4]]
         ninth_words = [x for x in ninth_words if points(x[0:4], multiplier, 2) == score]
     ninth_words_by_duo_letter = defaultdict(list)
     for x in ninth_words:

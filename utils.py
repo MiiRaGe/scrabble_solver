@@ -120,6 +120,27 @@ def is_score_possible(score, remaining):
         return r
 
 
+def get_max_letters(possibilities):
+    if not possibilities:
+        return defaultdict(lambda: 0)
+    letter_sum = defaultdict(set)
+    for possibility in possibilities:
+        for (letter, count) in possibility['letters'].items():
+            letter_sum[letter].add(count)
+    for (letter, counts) in letter_sum.items():
+        letter_sum[letter] = max(counts)
+    return letter_sum
+
+
+def add_word_to_list(word, words, position):
+    if not words:
+        words = [None] * 20
+    else:
+        words = copy.copy(words)
+    words[position] = word
+    return words
+
+
 TWO_LETTERS_SET = {x for x in SOWPODS[2]} & {x for x in TWL[2]}
 TWO_LETTERS_SET_BY_POINTS = defaultdict(set)
 for duo in TWO_LETTERS_SET:
