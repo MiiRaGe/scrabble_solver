@@ -86,10 +86,10 @@ def generate_scores_combo(variant):
 
 
 def run_process(args):
-    variant, dictionnary, last_letter, scores = args
-    print('Starting {}, {}, {}, {}'.format(variant, dictionnary, last_letter, scores))
+    variant, dictionary, last_letter, scores = args
+    print('Starting {}, {}, {}, {}'.format(variant, dictionary, last_letter, scores))
     config = {'variant': variant,
-     'dictionnary': dictionnary,
+     'dictionary': dictionary,
      'last_letter': last_letter,
      'scores': scores}
     param = json.dumps(config)
@@ -104,9 +104,9 @@ if __name__ == '__main__':
     last_letters = ['d', 'g']
     for variant in variants():
         scores_combo = generate_scores_combo(variant)
-        for dictionnary in ['sowpods', 'twl']:
+        for dictionary in ['sowpods', 'twl']:
             for last_letter in last_letters:
                 for scores in scores_combo:
-                    processes.append((variant, dictionnary, last_letter, scores))
+                    processes.append((variant, dictionary, last_letter, scores))
     pool = Pool(processes=8)
     pool.map(run_process, processes)
