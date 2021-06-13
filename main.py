@@ -251,6 +251,7 @@ def try_to_solve(scores, last_letter, dictionary, variant):
         number, possibilities = new_possibilities[0]
         print('Using :', number)
         guesses_left.remove(number)
+    return possibilities
 
 
 if __name__ == '__main__':
